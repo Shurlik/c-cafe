@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чебуречна "CHEBURGER"</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<!-- Боковая навигация -->
+<nav id="sidebar" class="sidebar">
+    <div class="sidebar-content">
+        <!-- Иконки категорий будут добавлены динамически -->
+    </div>
+</nav>
+
+<div class="container">
+    <header>
+        <h1>🥟 Чебуречна "CHEBURGER"</h1>
+        <p class="subtitle">Справжні чебуреки з найкращими начинками</p>
+    </header>
+
+    <div id="loading" class="loading">
+        <h3>⏳ Завантаження меню...</h3>
+    </div>
+
+    <div id="menu">
+        <!-- Fixed menu sections -->
+        <div class="menu-category animate-from-left" id="chebureki">
+            <h2 class="category-title">🥟&nbsp;Чебуреки&nbsp;</h2>
+            <div class="menu-items"></div>
+        </div>
+
+        <div class="menu-category animate-from-right" id="solodki-chebureki">
+            <h2 class="category-title">🍰&nbsp;Солодкі чебуреки&nbsp;</h2>
+            <div class="menu-items"></div>
+        </div>
+
+        <div class="menu-category animate-from-left" id="holodni-napoi">
+            <h2 class="category-title">🧊&nbsp;Холодні напої&nbsp;</h2>
+            <div class="menu-items"></div>
+        </div>
+
+        <div class="menu-category animate-from-right" id="limonadi">
+            <h2 class="category-title">🍋&nbsp;Лимонади&nbsp;</h2>
+            <div class="menu-items"></div>
+        </div>
+
+        <div class="menu-category animate-from-left" id="dodatki">
+            <h2 class="category-title">🍯&nbsp;Додатки&nbsp;</h2>
+            <div class="menu-items"></div>
+        </div>
+    </div>
+    <div id="locations" class="locations-section animate-from-right">
+        <h2 class="category-title">📍&nbsp;Наші локації&nbsp;</h2>
+        <!-- Location cards will be added here by JavaScript -->
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
