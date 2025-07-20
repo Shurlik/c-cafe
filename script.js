@@ -444,7 +444,7 @@ class Navigation {
 		let activeSection = null;
 
 		// Проверяем, находимся ли мы в самом низу страницы
-		const isAtBottom = (scrollTop + windowHeight) >= (documentHeight - 50);
+		const isAtBottom = (scrollTop + windowHeight) >= (documentHeight - 100);
 		if (isAtBottom) {
 			// Если внизу страницы, активируем последнюю секцию (локации)
 			const lastSection = sections[sections.length - 1];
@@ -454,7 +454,7 @@ class Navigation {
 			}
 		}
 		// Проверяем, находимся ли мы в верхней части страницы
-		else if (scrollTop < 10) {
+		else if (scrollTop < 100) {
 			activeSection = 'top';
 			// console.log('Active section: top (scroll position < 250)');
 		}
@@ -469,10 +469,10 @@ class Navigation {
 				const rect = section.getBoundingClientRect();
 
 				// Расстояние от верха экрана до секции
-				const distanceFromTop = Math.abs(rect.top - 10);
+				const distanceFromTop = Math.abs(rect.top - 100);
 
 				// Если секция видна в верхней части экрана
-				if (rect.top <= 20 && rect.bottom > 10) {
+				if (rect.top <= 200 && rect.bottom > 100) {
 					if (distanceFromTop < closestDistance) {
 						closestDistance = distanceFromTop;
 						closestSection = section.id;
