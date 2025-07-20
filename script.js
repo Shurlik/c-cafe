@@ -13,7 +13,7 @@ const CONFIG = {
 	CACHE_DURATION: 5 * 60 * 1000, // 5 минут
 
 	// Navigation settings
-	SCROLL_OFFSET: 100, // Отступ для активации секции
+	SCROLL_OFFSET: 10, // Отступ для активации секции
 };
 
 // ===== API ENDPOINTS =====
@@ -35,12 +35,12 @@ class DataService {
 		// Проверяем кэш
 		const cached = this.cache.get(cacheKey);
 		if (cached && Date.now() - cached.timestamp < CONFIG.CACHE_DURATION) {
-			console.log(`Using cached data for ${cacheKey}`);
+			// console.log(`Using cached data for ${cacheKey}`);
 			return cached.data;
 		}
 
 		try {
-			console.log(`Loading data from ${endpoint}`);
+			// console.log(`Loading data from ${endpoint}`);
 			const response = await fetch(endpoint);
 
 			if (!response.ok) {
@@ -99,7 +99,7 @@ class AnimationObserver {
     handleIntersection(entries) {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                console.log('Element in view:', entry.target.id || entry.target.className);
+                // console.log('Element in view:', entry.target.id || entry.target.className);
                 this.animateElement(entry.target);
                 // Убираем наблюдение после анимации
                 this.observer.unobserve(entry.target);
@@ -119,19 +119,34 @@ class AnimationObserver {
 
         // Наблюдаем за всеми секциями с классами animate-from-left и animate-from-right
         const sections = document.querySelectorAll('.menu-category.animate-from-left, .menu-category.animate-from-right, .locations-section.animate-from-right, .locations-section.animate-from-left');
-        sections.forEach(section => {
-            this.observer.observe(section);
-            console.log('Observing section:', section.id);
-        });
+        // sections.forEach(section => {
+        //     this.observer.observe(section);
+        //     // console.log('Observing section:', section.id);
+        // });
+				//
+        // // Специально проверяем секцию "Холодні напої"
+        // const holodniNapoiSection = document.getElementById('holodni-napoi');
+        // if (holodniNapoiSection) {
+        //     // console.log('Explicitly observing holodni-napoi section');
+        //     this.observer.observe(holodniNapoiSection);
+        // } else {
+        //     console.error('holodni-napoi section not found!');
+        // }
 
-        // Специально проверяем секцию "Холодні напої"
-        const holodniNapoiSection = document.getElementById('holodni-napoi');
-        if (holodniNapoiSection) {
-            console.log('Explicitly observing holodni-napoi section');
-            this.observer.observe(holodniNapoiSection);
-        } else {
-            console.error('holodni-napoi section not found!');
-        }
+	    sections.forEach(section => {
+		    // Перевіряємо чи секція вже видима
+		    const rect = section.getBoundingClientRect();
+		    const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+
+		    if (isVisible) {
+			    // console.log('Element already visible on init:', section.id);
+			    this.animateElement(section);
+		    } else {
+			    this.observer.observe(section);
+			    // console.log('Observing section:', section.id);
+		    }
+	    });
+
     }
 }
 // ===== NAVIGATION =====
@@ -220,9 +235,9 @@ class Navigation {
 
 		navItem.addEventListener('click', (e) => {
 			e.preventDefault();
-			console.log('Nav item clicked for section:', sectionId);
+			// console.log('Nav item clicked for section:', sectionId);
 
-			// Small delay to allow DOM to update
+			// Небольшая задержка чтобы DOM успел обновиться
 			setTimeout(() => {
 				this.scrollToSection(sectionId);
 			}, 100);
@@ -232,9 +247,9 @@ class Navigation {
 	}
 
 	getSectionId(categoryName) {
-		console.log('Input category name:', categoryName);
+		// console.log('Input category name:', categoryName);
 
-		// Transliteration of Cyrillic to Latin
+		// Транслитерация кириллицы в латиницу
 		const translitMap = {
 			'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo', 'ж': 'zh',
 			'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o',
@@ -245,80 +260,113 @@ class Navigation {
 
 		let id = categoryName.toLowerCase();
 
-		// Replace Cyrillic with Latin
+		// Заменяем кириллицу на латиницу
 		for (let [cyr, lat] of Object.entries(translitMap)) {
 			id = id.replace(new RegExp(cyr, 'g'), lat);
 		}
 
-		// Clean and format
+		// Очищаем и форматируем
 		id = id
-			.replace(/\s+/g, '-')           // spaces to hyphens
-			.replace(/[^\w\-]/g, '')        // only letters, numbers and hyphens
-			.replace(/\-+/g, '-')           // multiple hyphens to one
-			.replace(/^\-|\-$/g, '');       // remove hyphens at start/end
+			.replace(/\s+/g, '-')           // пробелы в дефисы
+			.replace(/[^\w\-]/g, '')        // только буквы, цифры и дефисы
+			.replace(/\-+/g, '-')           // множественные дефисы в один
+			.replace(/^\-|\-$/g, '');       // убираем дефисы в начале/конце
 
-		// Special cases
+		// Специальные случаи
 		if (categoryName.includes('окаці') || categoryName.includes('Локаці')) {
 			id = 'locations';
 		}
 
-		console.log('Generated section ID for', categoryName, '→', id);
+		// console.log('Generated section ID for', categoryName, '→', id);
 		return id || 'section'; // fallback если ID пустой
 	}
 
 	scrollToSection(sectionId) {
-		console.log('=== SCROLL DEBUG ===');
-		console.log('Trying to scroll to section:', sectionId);
+		// console.log('=== SCROLL DEBUG ===');
+		// console.log('Trying to scroll to section:', sectionId);
 
-		// Check all available sections
+		// Проверим все доступные секции
 		const allSections = document.querySelectorAll('[id]');
-		console.log('All elements with IDs:', Array.from(allSections).map(el => el.id));
+		// console.log('All elements with IDs:', Array.from(allSections).map(el => el.id));
+
+		// Специальная обработка для "Холодні напої"
+		if (sectionId === 'holodni-napoi') {
+			// console.log('Special handling for holodni-napoi section');
+		}
 
 		const element = document.getElementById(sectionId);
-		console.log('Found element:', element);
+		// console.log('Found element:', element);
 
 		if (element) {
 			this.isScrolling = true;
 
 			const elementPosition = element.offsetTop;
-			console.log('Element offsetTop:', elementPosition);
+			// console.log('Element offsetTop:', elementPosition);
 
-			const offsetPosition = Math.max(0, elementPosition - 100); // Top offset
-			console.log('Scroll to position:', offsetPosition);
+			const offsetPosition = Math.max(0, elementPosition - 100); // Отступ сверху
+			// console.log('Scroll to position:', offsetPosition);
 
 			window.scrollTo({
 				top: offsetPosition,
 				behavior: 'smooth'
 			});
 
-			// Set active section immediately
+			// Устанавливаем активную секцию сразу
 			this.setActiveNavItem(sectionId);
 
-			// Reset flag after animation time
+			// Сбрасываем флаг через время анимации
 			setTimeout(() => {
 				this.isScrolling = false;
-				this.updateActiveSection(); // Force update after scroll
-				console.log('Scroll completed');
+				this.updateActiveSection(); // Принудительно обновляем после скролла
+				// console.log('Scroll completed');
+
+				// Для "Холодні напої" дополнительно проверяем анимацию
+				if (sectionId === 'holodni-napoi') {
+					const section = document.getElementById('holodni-napoi');
+					if (section && !section.classList.contains('in-view')) {
+						// console.log('Adding in-view class to holodni-napoi section');
+						section.classList.add('in-view');
+					}
+				}
 			}, 1000);
 		} else {
 			console.error('Section not found! ID:', sectionId);
-			console.log('Available sections:', document.querySelectorAll('.menu-category, .locations-section'));
+			// console.log('Available sections:', document.querySelectorAll('.menu-category, .locations-section'));
+
+			// Если это "Холодні напої", попробуем найти по классу
+			if (sectionId === 'holodni-napoi') {
+				const sections = document.querySelectorAll('.menu-category');
+				sections.forEach(section => {
+					// console.log('Section:', section.id, section.className);
+				});
+
+				// Попробуем найти по заголовку
+				const titles = document.querySelectorAll('.category-title');
+				titles.forEach(title => {
+					// console.log('Title:', title.textContent, title.parentElement.id);
+					if (title.textContent.includes('Холодні напої')) {
+						// console.log('Found holodni-napoi section by title!');
+						const section = title.parentElement;
+						this.scrollToElement(section);
+					}
+				});
+			}
 		}
 
-		console.log('=== END SCROLL DEBUG ===');
+		// console.log('=== END SCROLL DEBUG ===');
 	}
 
-	// Helper method for scrolling to an element
+	// Вспомогательный метод для прокрутки к элементу
 	scrollToElement(element) {
 		if (!element) return;
 
 		this.isScrolling = true;
 
 		const elementPosition = element.offsetTop;
-		console.log('Element offsetTop:', elementPosition);
+		// console.log('Element offsetTop:', elementPosition);
 
 		const offsetPosition = Math.max(0, elementPosition - 100);
-		console.log('Scroll to position:', offsetPosition);
+		// console.log('Scroll to position:', offsetPosition);
 
 		window.scrollTo({
 			top: offsetPosition,
@@ -334,18 +382,18 @@ class Navigation {
 		setTimeout(() => {
 			this.isScrolling = false;
 			this.updateActiveSection();
-			console.log('Scroll completed');
+			// console.log('Scroll completed');
 
 			// Добавляем класс in-view для анимации
 			if (element.classList.contains('animate-from-left') || element.classList.contains('animate-from-right')) {
-				console.log('Adding in-view class to element');
+				// console.log('Adding in-view class to element');
 				element.classList.add('in-view');
 			}
 		}, 1000);
 	}
 
 	scrollToTop() {
-		console.log('Scrolling to top');
+		// console.log('Scrolling to top');
 		this.isScrolling = true;
 
 		window.scrollTo({
@@ -359,7 +407,7 @@ class Navigation {
 		setTimeout(() => {
 			this.isScrolling = false;
 			// Не вызываем updateActiveSection здесь, так как уже установили правильную секцию
-			console.log('Scroll to top completed');
+			// console.log('Scroll to top completed');
 		}, 1000);
 	}
 
@@ -390,77 +438,115 @@ class Navigation {
 		const windowHeight = window.innerHeight;
 		const documentHeight = document.documentElement.scrollHeight;
 
-		console.log('Current scroll position:', scrollTop);
-		console.log('Window height:', windowHeight, 'Document height:', documentHeight);
+		// // console.log('Current scroll position:', scrollTop);
+		// // console.log('Window height:', windowHeight, 'Document height:', documentHeight);
 
 		let activeSection = null;
 
-		// Check if we are at the very bottom of the page
+		// Проверяем, находимся ли мы в самом низу страницы
 		const isAtBottom = (scrollTop + windowHeight) >= (documentHeight - 50);
 		if (isAtBottom) {
-			// If at the bottom of the page, activate the last section (locations)
+			// Если внизу страницы, активируем последнюю секцию (локации)
 			const lastSection = sections[sections.length - 1];
 			if (lastSection) {
 				activeSection = lastSection.id;
-				console.log('Active section: bottom ->', activeSection);
+				// console.log('Active section: bottom ->', activeSection);
 			}
 		}
-		// Check if we are at the top of the page
-		else if (scrollTop < 250) {
+		// Проверяем, находимся ли мы в верхней части страницы
+		else if (scrollTop < 10) {
 			activeSection = 'top';
-			console.log('Active section: top (scroll position < 250)');
+			// console.log('Active section: top (scroll position < 250)');
 		}
-		// Normal logic for finding the active section
+		// Обычная логика поиска активной секции
 		else {
-			let closestSection = null;
+			let closestSection = 'chebureki';
 			let closestDistance = Infinity;
+			let holodniNapoiVisible = false;
+			let holodniNapoiDistance = Infinity;
 
 			sections.forEach(section => {
 				const rect = section.getBoundingClientRect();
 
-				// Distance from the top of the screen to the section
-				const distanceFromTop = Math.abs(rect.top - 100);
+				// Расстояние от верха экрана до секции
+				const distanceFromTop = Math.abs(rect.top - 10);
 
-				// If the section is visible in the upper part of the screen
-				if (rect.top <= 200 && rect.bottom > 100) {
+				// Если секция видна в верхней части экрана
+				if (rect.top <= 20 && rect.bottom > 10) {
 					if (distanceFromTop < closestDistance) {
 						closestDistance = distanceFromTop;
 						closestSection = section.id;
 					}
 
+					// Специальная проверка для "Холодні напої"
+					if (section.id === 'holodni-napoi') {
+						holodniNapoiVisible = true;
+						holodniNapoiDistance = distanceFromTop;
+						// console.log('holodni-napoi section is visible, distance:', distanceFromTop);
+
+						// Убедимся, что секция имеет класс in-view для анимации
+						if (!section.classList.contains('in-view')) {
+							// console.log('Adding in-view class to holodni-napoi section');
+							section.classList.add('in-view');
+						}
+					}
 				}
 
+				// Дополнительная проверка для "Холодні напої" с более широким диапазоном
+				if (section.id === 'holodni-napoi' && rect.top <= 300 && rect.bottom > 0) {
+					// console.log('holodni-napoi section is in extended visible range');
+
+					// Убедимся, что секция имеет класс in-view для анимации
+					if (!section.classList.contains('in-view')) {
+						// console.log('Adding in-view class to holodni-napoi section (extended range)');
+						section.classList.add('in-view');
+					}
+				}
 			});
 
+			// Если "Холодні напої" видна и достаточно близко к верху, приоритизируем её
+			if (holodniNapoiVisible && holodniNapoiDistance < closestDistance + 10) {
+				closestSection = 'holodni-napoi';
+				// console.log('Prioritizing holodni-napoi section as active');
+			}
 
 			if (closestSection) {
 				activeSection = closestSection;
-				console.log('Active section:', activeSection, 'distance:', closestDistance);
+				// console.log('Active section:', activeSection, 'distance:', closestDistance);
 			}
 		}
 
 		if (activeSection && activeSection !== this.activeSection) {
 			this.setActiveNavItem(activeSection);
+
+			// Если активная секция изменилась на "Холодні напої", убедимся что она анимирована
+			if (activeSection === 'holodni-napoi') {
+				const section = document.getElementById('holodni-napoi');
+				if (section && !section.classList.contains('in-view')) {
+					// console.log('Adding in-view class to holodni-napoi section (active section changed)');
+					section.classList.add('in-view');
+				}
+			}
 		}
 	}
 
 	setActiveNavItem(sectionId) {
 		if (this.activeSection === sectionId) return;
 
-		console.log('Setting active nav item:', sectionId);
+		// console.log('Setting active nav item:', sectionId);
 
-		// Remove active class from all elements
+		// Убираем активный класс со всех элементов
 		this.sidebarContent.querySelectorAll('.nav-item').forEach(item => {
 			item.classList.remove('active');
 		});
 
-		// Add active class to the corresponding element
+		// Добавляем активный класс к соответствующему элементу
 		const activeItem = this.sidebarContent.querySelector(`[data-section="${sectionId}"]`);
 		if (activeItem) {
 			activeItem.classList.add('active');
-			console.log('Activated nav item for section:', sectionId);
+			// console.log('Activated nav item for section:', sectionId);
 		} else {
-			console.log('Nav item not found for section:', sectionId);
+			// console.log('Nav item not found for section:', sectionId);
 		}
 
 		this.activeSection = sectionId;
@@ -468,14 +554,14 @@ class Navigation {
 }
 
 const Utils = {
-	// Get image URL (priority: image_url, fallback to Cloudinary)
+	// Получение URL изображения (приоритет image_url, fallback на Cloudinary)
 	getImageUrl(item) {
-		// First check direct image link
+		// Сначала проверяем прямую ссылку на изображение
 		if (item.image_url && item.image_url.trim()) {
 			return item.image_url.trim();
 		}
 
-		// Fallback to Cloudinary if cloudinary_id exists
+		// Fallback на Cloudinary, если есть cloudinary_id
 		if (item.cloudinary_id && CONFIG.CLOUDINARY.cloud_name !== 'your_cloud_name') {
 			return `${CONFIG.CLOUDINARY.base_url}${item.cloudinary_id}`;
 		}
@@ -483,17 +569,17 @@ const Utils = {
 		return null;
 	},
 
-	// Filter active items
+	// Фильтрация активных элементов
 	filterActive(items) {
 		return items.filter(item => item.active === 'TRUE' || item.active === true);
 	},
 
-	// Sort by order
+	// Сортировка по порядку
 	sortByOrder(items) {
 		return items.sort((a, b) => parseInt(a.order || 0) - parseInt(b.order || 0));
 	},
 
-	// Group items by category
+	// Группировка товаров по категориям
 	groupByCategory(menuItems) {
 		const grouped = {};
 		menuItems.forEach(item => {
@@ -506,7 +592,7 @@ const Utils = {
 		return grouped;
 	},
 
-	// Safe price formatting
+	// Безопасное получение цены
 	formatPrice(price) {
 		if (!price) return '';
 		return price.toString().includes('₴') ? price : `${price} ₴`;
@@ -545,33 +631,49 @@ class Renderer {
 			const menuItemsContainer = sectionElement.querySelector('.menu-items');
 			if (!menuItemsContainer) return;
 
-			// Find items for this category
+			// Находим элементы для этой категории
 			const items = itemsByCategory[categoryName] || [];
 			const sortedItems = Utils.sortByOrder(items);
 
-			// Fill the container with items
+			// Заполняем контейнер элементами
 			menuItemsContainer.innerHTML = sortedItems.map(item => this.renderMenuItem(item)).join('');
 
-			// If no items, hide the section
+			// Если нет элементов, скрываем секцию
 			if (sortedItems.length === 0) {
 				sectionElement.style.display = 'none';
 			}
 		});
 
-		// Render navigation for fixed sections
+		// Рендерим навигацию для фиксированных секций
 		const activeCategories = Utils.filterActive(categories);
 		this.navigation.renderNavigation(activeCategories);
 
-		// Force navigation update after a small delay
+		// Принудительно обновляем навигацию через небольшую задержку
 		setTimeout(() => {
-			console.log('Menu rendered, checking sections...');
+			// console.log('Menu rendered, checking sections...');
 			const sections = document.querySelectorAll('.menu-category');
-			console.log('Found sections:', Array.from(sections).map(s => s.id));
+			// // console.log('Found sections:', Array.from(sections).map(s => s.id));
 			this.navigation.updateActiveSection();
 
-			// Start observing animations
+			// Запускаем наблюдение за анимациями
 			this.animationObserver.observeElements();
 
+			// Специальная обработка для "Холодні напої"
+			const holodniNapoiSection = document.getElementById('holodni-napoi');
+			if (holodniNapoiSection) {
+				// console.log('Special handling for holodni-napoi section after menu render');
+
+				// Проверяем видимость секции
+				const rect = holodniNapoiSection.getBoundingClientRect();
+				const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+				// console.log('holodni-napoi section visibility:', isVisible, 'position:', rect.top, rect.bottom);
+
+				// Если секция видна или близка к видимой области, добавляем класс in-view
+				if (isVisible || rect.top < window.innerHeight + 200) {
+					// console.log('Adding in-view class to holodni-napoi section (initial render)');
+					holodniNapoiSection.classList.add('in-view');
+				}
+			}
 		}, 500);
 	}
 
@@ -597,23 +699,23 @@ class Renderer {
 	renderLocations(locations) {
 		const activeLocations = Utils.sortByOrder(Utils.filterActive(locations));
 
-		// Add location cards to the existing container
+		// Добавляем карточки локаций в существующий контейнер
 		const locationCards = activeLocations.map(location => this.renderLocationCard(location)).join('');
 		this.locationsContainer.innerHTML += locationCards;
 
-		// If no locations, hide the section
+		// Если нет локаций, скрываем секцию
 		if (activeLocations.length === 0) {
 			this.locationsContainer.style.display = 'none';
 		}
 
-		// Start observing animations after rendering locations
+		// Запускаем наблюдение за анимациями после рендеринга локаций
 		setTimeout(() => {
 			this.animationObserver.observeElements();
 		}, 100);
 	}
 
 	renderLocationCard(location) {
-		// Check if image exists
+		// Проверяем наличие изображения
 		const hasImage = location.image_url && location.image_url.trim();
 
 		return `
@@ -661,32 +763,32 @@ class ChebufechnaApp {
 
 	async init() {
 		try {
-			console.log('🚀 Initializing Cheburechna App...');
+			// console.log('🚀 Initializing Cheburechna App...');
 
-			// Show loading progress
+			// Показываем прогресс загрузки
 			this.updateLoadingStatus('Завантаження категорій...');
 
-			// Load all data in parallel
+			// Загружаем все данные параллельно
 			const [categories, menuItems, locations] = await Promise.all([
 				this.dataService.loadCategories(),
 				this.dataService.loadMenu(),
 				this.dataService.loadLocations()
 			]);
 
-			console.log('📊 Data loaded:', {
-				categories: categories.length,
-				menuItems: menuItems.length,
-				locations: locations.length
-			});
+			// console.log('📊 Data loaded:', {
+				//categories: categories.length,
+				//menuItems: menuItems.length,
+				//locations: locations.length
+			//});
 
-			// Hide loading
+			// Скрываем загрузку
 			this.renderer.hideLoading();
 
-			// Render content
+			// Рендерим контент
 			this.renderer.renderMenu(categories, menuItems);
 			this.renderer.renderLocations(locations);
 
-			console.log('✅ App initialized successfully!');
+			// console.log('✅ App initialized successfully!');
 
 		} catch (error) {
 			console.error('❌ App initialization failed:', error);
@@ -701,7 +803,7 @@ class ChebufechnaApp {
 		}
 	}
 
-	// Method for manual data refresh
+	// Метод для ручного обновления данных
 	async refresh() {
 		this.dataService.cache.clear();
 		await this.init();
@@ -727,6 +829,6 @@ window.addEventListener('error', (event) => {
 });
 
 // Логирование для отладки
-console.log('🥟 Cheburechna script loaded!');
-console.log('📋 Endpoints:', ENDPOINTS);
-console.log('⚙️ Config:', CONFIG);
+// console.log('🥟 Cheburechna script loaded!');
+// console.log('📋 Endpoints:', ENDPOINTS);
+// console.log('⚙️ Config:', CONFIG);

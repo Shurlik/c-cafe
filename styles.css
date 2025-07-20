@@ -224,11 +224,11 @@ h1 {
 
 /* Classes added by IntersectionObserver when element comes into view */
 .menu-category.animate-from-left.in-view, .locations-section.animate-from-left.in-view {
-    animation: fadeInLeft 0.8s ease forwards;
+    animation: fadeInLeft 0.4s ease forwards;
 }
 
 .menu-category.animate-from-right.in-view, .locations-section.animate-from-right.in-view {
-    animation: fadeInRight 0.8s ease forwards;
+    animation: fadeInRight 0.4s ease forwards;
 }
 
 /* Установка порядка анимации для секций */
